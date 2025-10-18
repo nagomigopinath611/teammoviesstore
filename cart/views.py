@@ -41,14 +41,13 @@ def purchase(request):
     cart_total = calculate_cart_total(cart, movies_in_cart)
 
     if request.method != 'POST':
-        return render(request, 'cart/city_form.html')
+        return render(request, 'cart/state_form.html')
     
-    city = request.POST.get('city')
+    state = request.POST.get('state')
 
     order = Order()
     order.user = request.user
     order.total = cart_total
-    order.city = city
     order.save()
     for movie in movies_in_cart:
         item = Item()
@@ -66,18 +65,18 @@ def purchase(request):
 def map_view(request):
     state_movie_stats = (
         Item.objects
-        .values('order__state', 'movie__name')
+        .values('order_state', 'movie_name')
         .annotate(num_purchases=Count('id'))
-        .exclude(order__state__isnull=True)
-        .exclude(order__state__exact='')
+        .exclude(order_state_isnull=True)
+        .exclude(order_state_exact='')
         .order_by('-num_purchases')
     )
 
     top_movie_per_state = {}
     for entry in state_movie_stats:
         state = entry['order__state']
-        movie = entry['movie__name']
+        movie = entry['movie_name']
         if state not in top_movie_per_state:
             top_movie_per_state[state] = movie
 
-    return render(request, 'home/index.html', {'top_movie_per_state': top_movie_per_state})
+    return render(request, 'home/index.html', {'top_movie_per_stat': top_movie_per_state})
